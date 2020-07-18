@@ -1,0 +1,6 @@
+framework module Pods_Touch_TouchUITests {
+  umbrella header "Pods-Touch-TouchUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
