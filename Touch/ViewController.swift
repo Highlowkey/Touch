@@ -13,62 +13,56 @@ import FirebaseDatabase
 class ViewController: UIViewController {
     
     override var prefersStatusBarHidden: Bool { return true }
+    
+    var currentTaps = 0
 
     @IBOutlet weak var numOnline: UILabel!
     
     @IBAction func tappedScreen(_ sender: Any) {
         let ref = Database.database().reference()
-        ref.child("online/\(getUUID())/pressed").setValue(1)
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false, block: {_ in
-            ref.child("online/\(self.getUUID())/pressed").setValue(0)
-        })
+        currentTaps = currentTaps + 1
+        ref.child("taps").setValue(currentTaps + 1)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         numOnline.text = ""
-        let haptic = UINotificationFeedbackGenerator()
+        let haptic = UIImpactFeedbackGenerator(style: .heavy)
         
         let ref = Database.database().reference()
         
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true, block: {_ in
-            ref.child("online/\(self.getUUID())/time").setValue(self.getTime())
+            ref.child("online/\(self.getUUID())").setValue(self.getTime())
         })
-        
-        ref.child("online/\(getUUID())/pressed").setValue(0)
-        
-//        ref.child(".info").child("connected").observe(.value, with: { snapshot in
-//            if let connected = snapshot.value as? Bool, connected {
-//                self.connectedToDatabase = true
-//            } else {
-//                self.connectedToDatabase = false
-//            }
-//        })
         
         ref.child("online").observe(.value, with: { snapshot in
             self.numOnline.text = String(snapshot.childrenCount)
             if let onlineDictionary = snapshot.value as? NSDictionary {
                 for user in onlineDictionary {
-                    if let userDict = user.value as? NSDictionary {
-                        if userDict.value(forKey: "pressed") as? Int ?? 0 == 1 && user.key as! String != self.getUUID() {
-                            haptic.notificationOccurred(.warning)
-                        }
-                        if userDict.value(forKey: "time") as? Int ?? 0 < self.getTime() - 10 {
+                    if user.key as? String != self.getUUID() {
+                        if user.value as? Int ?? 0 < self.getTime() - 10 {
                             ref.child("online/\(user.key)").removeValue()
                         }
                     }
                 }
             }
         })
+        
+        ref.child("taps").observe(.value, with: { snapshot in
+            if let realTaps = snapshot.value as? Int {
+                if self.currentTaps == 0 {
+                    self.currentTaps = realTaps
+                }
+                if self.currentTaps < realTaps {
+                    haptic.impactOccurred()
+                    self.currentTaps = realTaps
+                }
+            }
+        })
     }
     
     func getUUID() -> String {
-//        var possUUID = UserDefaults.standard.string(forKey: "UUID") ?? "not logged"
-//        if possUUID == "not logged" {
-//            possUUID =
-//            UserDefaults.standard.set(possUUID, forKey: "UUID")
-//        }
         return UIDevice.current.identifierForVendor!.uuidString
     }
         
