@@ -19,9 +19,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var numOnline: UILabel!
     
     @IBAction func tappedScreen(_ sender: Any) {
+        currentTaps += 1
         let ref = Database.database().reference()
-        currentTaps = currentTaps + 1
-        ref.child("taps").setValue(currentTaps + 1)
+        ref.child("taps").setValue(currentTaps)
     }
     
     override func viewDidLoad() {
