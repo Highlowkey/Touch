@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 import FirebaseDatabase
 
 class ViewController: UIViewController {
@@ -50,8 +51,8 @@ class ViewController: UIViewController {
             if let onlineDictionary = snapshot.value as? NSDictionary {
                 for user in onlineDictionary {
                     if let userDict = user.value as? NSDictionary {
-                        if userDict.value(forKey: "pressed") as? Int ?? 0 == 1 {
-                            haptic.notificationOccurred(.error)
+                        if userDict.value(forKey: "pressed") as? Int ?? 0 == 1 && user.key as! String != self.getUUID() {
+                            haptic.notificationOccurred(.warning)
                         }
                         if userDict.value(forKey: "time") as? Int ?? 0 < self.getTime() - 10 {
                             ref.child("online/\(user.key)").removeValue()
