@@ -22,6 +22,11 @@ class ViewController: UIViewController {
         currentTaps += 1
         let ref = Database.database().reference()
         ref.child("taps").setValue(currentTaps)
+        
+        numOnline.font = numOnline.font.withSize(220)
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false, block: {_ in
+            self.numOnline.font = self.numOnline.font.withSize(250)
+        })
     }
     
     override func viewDidLoad() {
